@@ -12,13 +12,16 @@ Display display(.data(data),.which(which),.seg(seg));
 endmodule
 
 module SelectLight(
-    output reg which[2:0],
+    output reg [2:0]which,
     input clk
 );
-reg count=0
+reg [31:0]count=0;
 always @(posedge clk)count <= count+1b'1;
 always @(negedge clk)begin
-    if(count == 20000000)which <= which+1b'1;
+    if(count == 20000000)begin
+        which <= which+1b'1;
+        count = 0;
+    end
 end
 endmodule;
 
