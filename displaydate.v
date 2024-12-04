@@ -7,7 +7,7 @@ module Head(
 );
 wire [31:0] data;
 wire [31:0] curdate;
-ChooseData chooseData(.sw(sw),.data(data),.enable(enable));
+ChooseData chooseData(.clk(clk),.sw(sw),.data(data),.enable(enable));
 SelectLight selectLight(.clk(clk),.which(which));
 Display display(.data(data),.which(which),.seg(seg));
 endmodule
@@ -26,30 +26,29 @@ end
 endmodule;
 
 module ChooseData(
+    input clk,
     input [1:0] sw,
     input wire [31:0] curdate,
-    output reg [31:0] data,
-    output reg enable
+    output reg [31:0] data= 32'h2024_1204,
+    output reg enable=1
 );
-always @(*) begin
-    case (sw)
-    2'b00: begin
-        enable <= 0;
-        data <= 32'h0000_0000;
+
+reg [31:0]count=0;  
+always @(posedge clk) begin
+    count <= (count>20000000? 32'b0 : count+1);
+    if(count == 20000000)begin
+        if(data[7:0]<30)begin
+            data <= data + 1'h1;
+        end  
+        else if(data[15:8]<12)begin
+            data[15:8] <= data[15:8] +1'h1; 
+            data[7:0]<=2'h01;
+        end
+        else begin
+            data[31:16]<=data[31:16] + 1'h1;
+            data[15:0]<=16'h0101;
+        end
     end
-    2'b01: begin
-        enable <= 1;
-        data <= 32'h2024_1204;
-    end
-    2'b10: begin
-        enable <= 1;
-        data <= 32'habcd_0234;
-    end
-    2'b11: begin
-        enable <= 1;
-        data <= 32'hefab_2cab;
-    end
-    endcase
 end
 endmodule
 
